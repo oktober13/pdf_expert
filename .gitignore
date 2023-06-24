@@ -27,7 +27,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 .idea/
-pdf_docs/
+pdf_docs*/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -38,6 +38,7 @@ pdf_docs/
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+second_lib.py
 
 # Unit test / coverage reports
 htmlcov/

@@ -1,50 +1,36 @@
-import PyPDF2
-from fuzzywuzzy import fuzz
-# import string
+import os
+from tasks import process_pdf
+from celery import Celery
+from celery import group
+
+# Создание экземпляра Celery
+app = Celery('tasks', broker='redis://localhost:6379/0')
 
 
-# def register_check(reference_string, found_string):
-#     output = []
-#     punctuation = set(string.punctuation)
-#     reference_string_set = set(char for char in reference_string if char in punctuation)
-#     found_string_set = set(char for char in found_string if char in punctuation)
-#     if reference_string_set != found_string_set:
-#         output.append('Есть расхождения в пунктуации.')
-#     if ''.join(char for char in reference_string if char not in punctuation).lower() == ''.join(char for char in found_string if char not in punctuation).lower():
-#         output.append("Неверный регистр ОКС.")
-#     return output
+def process_folder(folder_path, search_query):
+    tasks = []
+
+    for root, _, files in os.walk(folder_path):
+        for file_name in files:
+            if file_name.endswith('.pdf'):
+                file_path = os.path.join(root, file_name)
+                task = process_pdf.delay(file_path, search_query)
+                tasks.append(task)
+
+    # Группировка задач и ожидание их выполнения
+    group(tasks).get(None)
 
 
-file_path = input("Введите путь к файлу: ")
-
-with open(file_path, 'rb') as file:
-    reader = PyPDF2.PdfReader(file)
-
+if __name__ == '__main__':
+    folder_path = input("Введите путь к папке: ")
     search_query = input("Введите строку для поиска: ")
 
-    results = []
-
-    for page_number, page in enumerate(reader.pages, start=1):
-        text = page.extract_text()
-        text = text.replace('\n', ' ').replace('\t', ' ').replace('  ', ' ')
-
-        # Вычисление сходства строки поиска с текстом страницы
-        match_score = fuzz.partial_ratio(search_query.lower(), text.lower())
-
-        # Если сходство выше 50%, добавить результат в список
-        if match_score >= 81:
-            results.append((page_number, match_score, 'Совпадение'))
-        elif 81 > match_score >= 65:
-            results.append((page_number, match_score, 'Внимание, необходимо проверить!'))
-
-    # Сохраняем в файл
-    with open('search_results.txt', 'w') as output_file:
-        output_file.write(f"Объект капитального строительства: {search_query}\n")
-        for i, result in enumerate(results, start=1):
-            page_number, match_score, comment = result
-            output_file.write(f"{i}. Найдено совпадение на странице {page_number} - процент сходства {match_score}% - {comment}\n")
+    process_folder(folder_path, search_query)
 
 
 
-# Введите путь к файлу: pdf_docs/Раздел ПД №3_Том 3.3_51-ТКР..00027-21_СКЭ-25982.pdf
+# Введите путь к папке: pdf_docs
 # Введите строку для поиска: Капитальный ремонт автомобильной дороги Р-215 Астрахань - Кочубей - Кизляр - Махачкала, подъезд к г. Грозный на участке км 70+127 – км 85+267, Чеченская Республика
+
+# Введите путь к папке: pdf_docs2
+# Введите строку для поиска: Строительство и обустройство скважин куста № 10 Гарюшкинского месторождения

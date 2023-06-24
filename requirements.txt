@@ -1,2 +1,7 @@
 PyPDF2
 fuzzywuzzy
+Celery
+
+# pamac install redis
+# redis-server
+# celery -A tasks worker --loglevel=info
