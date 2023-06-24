@@ -41,4 +41,3 @@ def process_pdf(file_path, search_query):
             for i, result in enumerate(results, start=1):
                 page_number, match_score, comment = result
                 output_file.write(f"{i}. Найдено совпадение на странице {page_number} - процент сходства {match_score}% - {comment}\n")
-

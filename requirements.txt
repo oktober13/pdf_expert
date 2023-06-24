@@ -1,6 +1,7 @@
 PyPDF2
 fuzzywuzzy
 Celery
+redis
 
 # pamac install redis
 # redis-server
