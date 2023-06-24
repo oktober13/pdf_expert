@@ -1,4 +1,6 @@
 import os
+import subprocess
+import time
 from tasks import process_pdf
 from celery import Celery
 from celery import group
@@ -25,8 +27,19 @@ if __name__ == '__main__':
     folder_path = input("Введите путь к папке: ")
     search_query = input("Введите строку для поиска: ")
 
+    # Запуск Redis
+    redis_process = subprocess.Popen(["redis-server"])
+
+    # Запуск Celery
+    celery_process = subprocess.Popen(["celery", "-A", "tasks", "worker", "--loglevel=info"])
+
+    # Обработка файлов
     process_folder(folder_path, search_query)
 
+    time.sleep(120)
+    # Закрытие Redis и Celery
+    redis_process.terminate()
+    celery_process.terminate()
 
 
 # Введите путь к папке: pdf_docs
