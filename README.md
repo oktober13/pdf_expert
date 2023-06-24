@@ -8,6 +8,9 @@
 ```
 pip install -r requirements.txt
 ```
+```
+pip install python-Levenshtein
+```
 Так же нужно установить на персональный компьютер [Redis]('https://redis.io/download/')
 
 ## Использование
